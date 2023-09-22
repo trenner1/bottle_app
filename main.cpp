@@ -2,10 +2,11 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <ctime> // For handling dates and times
+#include <ctime>
+#include <limits>
 
 /**
- * @brief Represents the size of a beer container, either metric (ml) or non-metric (fl oz).
+ * @brief Represents the size of a beer container.
  */
 class ContainerSize {
 private:
@@ -15,22 +16,22 @@ private:
 public:
     /**
      * @brief Constructor for ContainerSize.
-     * @param isMetric True for metric size (ml), false for non-metric size (fl oz).
-     * @param size The size value.
+     * @param isMetric True for metric (ml), false for non-metric (fl oz).
+     * @param size The size of the container.
      */
     ContainerSize(bool isMetric, int size) : isMetric(isMetric), size(size) {}
 
     /**
      * @brief Get whether the size is in metric units (ml).
-     * @return True if metric, false if non-metric.
+     * @return True if the size is in metric units, false otherwise.
      */
     bool getIsMetric() const {
         return isMetric;
     }
 
     /**
-     * @brief Get the size value.
-     * @return Size in ml (if metric) or fl oz (if non-metric).
+     * @brief Get the size of the container.
+     * @return The size of the container in ml (if metric) or fl oz (if non-metric).
      */
     int getSize() const {
         return size;
@@ -38,7 +39,7 @@ public:
 
     /**
      * @brief Get the size with appropriate units (default to metric).
-     * @return Size as a string with units (ml or converted from fl oz).
+     * @return A string representation of the size with units.
      */
     std::string getSizeWithUnits() const {
         if (isMetric) {
@@ -51,17 +52,17 @@ public:
     }
 
     /**
-     * @brief Set whether the size is in metric units (ml).
-     * @param metric True for metric, false for non-metric.
+     * @brief Set the units to metric or non-metric.
+     * @param metric True to set the units to metric (ml), false for non-metric (fl oz).
      */
     void setIsMetric(bool metric) {
         isMetric = metric;
     }
 
     /**
-     * @brief Set the size (with optional conversion).
-     * @param newSize The new size value.
-     * @param convertToMetric Whether to convert non-metric to metric units.
+     * @brief Set the size of the container (with optional conversion).
+     * @param newSize The new size of the container.
+     * @param convertToMetric True to convert to metric units (ml) if not already metric (fl oz).
      */
     void setSize(int newSize, bool convertToMetric = false) {
         size = newSize;
@@ -75,7 +76,7 @@ public:
 };
 
 /**
- * @brief Represents a barcode for a beer bottle.
+ * @brief Represents a barcode associated with a beer.
  */
 class Barcode {
 private:
@@ -106,32 +107,30 @@ public:
 };
 
 /**
- * @brief Represents a beer in the inventory.
+ * @brief Represents a beer with various attributes.
  */
 class Beer {
 private:
-    std::string style;             // Style of the beer
-    std::string name;              // Name of the beer
-    double alcoholContent;         // Alcohol content of the beer (%)
-    ContainerSize containerSize;   // Represents bottle size
-    int quantity;                  // Quantity of bottles in stock
-    Barcode barcode;               // Barcode for the beer
-    std::string updatedDate;       // Last updated date
+    std::string style;
+    std::string name;
+    double alcoholContent;
+    ContainerSize containerSize; // Represents bottle size
+    int quantity;
+    Barcode barcode;
+    std::string updatedDate; // Date when the beer was last updated
 
 public:
     /**
      * @brief Constructor for Beer.
-     * @param style Style of the beer.
-     * @param name Name of the beer.
-     * @param alcoholContent Alcohol content of the beer (%).
-     * @param containerSize Container size (metric or non-metric).
-     * @param quantity Quantity of bottles in stock.
-     * @param barcodeValue Barcode value for the beer.
+     * @param style The style of the beer.
+     * @param name The name of the beer.
+     * @param alcoholContent The alcohol content of the beer (percentage).
+     * @param containerSize The container size of the beer.
+     * @param quantity The quantity of the beer.
+     * @param barcodeValue The barcode value associated with the beer.
      */
-    Beer(const std::string& style, const std::string& name, double alcoholContent,
-         const ContainerSize& containerSize, int quantity, int barcodeValue)
-        : style(style), name(name), alcoholContent(alcoholContent),
-          containerSize(containerSize), quantity(quantity), barcode(barcodeValue) {
+    Beer(const std::string& style, const std::string& name, double alcoholContent, const ContainerSize& containerSize, int quantity, int barcodeValue)
+        : style(style), name(name), alcoholContent(alcoholContent), containerSize(containerSize), quantity(quantity), barcode(barcodeValue) {
         // Initialize the updated date with the current date and time
         updateDate();
     }
@@ -154,7 +153,7 @@ public:
 
     /**
      * @brief Get the alcohol content of the beer.
-     * @return The alcohol content of the beer (%).
+     * @return The alcohol content of the beer (percentage).
      */
     double getAlcoholContent() const {
         return alcoholContent;
@@ -162,31 +161,31 @@ public:
 
     /**
      * @brief Get the container size of the beer.
-     * @return The container size object.
+     * @return The container size of the beer.
      */
     const ContainerSize& getContainerSize() const {
         return containerSize;
     }
 
     /**
-     * @brief Get the quantity of bottles in stock.
-     * @return The quantity of bottles in stock.
+     * @brief Get the quantity of the beer.
+     * @return The quantity of the beer.
      */
     int getQuantity() const {
         return quantity;
     }
 
     /**
-     * @brief Get the barcode for the beer.
-     * @return The barcode object.
+     * @brief Get the barcode associated with the beer.
+     * @return The barcode associated with the beer.
      */
     const Barcode& getBarcode() const {
         return barcode;
     }
 
     /**
-     * @brief Get the last updated date.
-     * @return The last updated date as a string.
+     * @brief Get the date when the beer was last updated.
+     * @return The updated date.
      */
     std::string getUpdatedDate() const {
         return updatedDate;
@@ -210,7 +209,7 @@ public:
 
     /**
      * @brief Set the alcohol content of the beer.
-     * @param newAlcoholContent The new alcohol content of the beer (%).
+     * @param newAlcoholContent The new alcohol content of the beer (percentage).
      */
     void setAlcoholContent(double newAlcoholContent) {
         alcoholContent = newAlcoholContent;
@@ -218,31 +217,22 @@ public:
 
     /**
      * @brief Set the container size of the beer.
-     * @param newSize The new size of the container.
-     * @param convertToMetric Whether to convert non-metric to metric units.
+     * @param newSize The new container size of the beer.
      */
     void setContainerSize(const ContainerSize& newSize) {
         containerSize = newSize;
     }
 
     /**
-     * @brief Set the quantity of bottles in stock.
-     * @param newQuantity The new quantity of bottles in stock.
+     * @brief Set the quantity of the beer.
+     * @param newQuantity The new quantity of the beer.
      */
     void setQuantity(int newQuantity) {
         quantity = newQuantity;
     }
 
     /**
-     * @brief Set the barcode for the beer.
-     * @param newBarcode The new barcode value.
-     */
-    void setBarcode(int newBarcode) {
-        barcode.setValue(newBarcode);
-    }
-
-    /**
-     * @brief Update the last updated date to the current date and time.
+     * @brief Update the date to the current date and time.
      */
     void updateDate() {
         std::time_t currentTime = std::time(nullptr);
@@ -253,11 +243,11 @@ public:
 };
 
 /**
- * @brief Represents a breakage record, tracking the total breakage quantity.
+ * @brief Represents a breakage handling class.
  */
 class Breakage {
 private:
-    int totalBreakage; // Total quantity of breakage
+    int totalBreakage;
 
 public:
     /**
@@ -266,24 +256,24 @@ public:
     Breakage() : totalBreakage(0) {}
 
     /**
-     * @brief Get the total quantity of breakage.
-     * @return The total quantity of breakage.
+     * @brief Get the total breakage count.
+     * @return The total breakage count.
      */
     int getTotalBreakage() const {
         return totalBreakage;
     }
 
     /**
-     * @brief Set the total quantity of breakage.
-     * @param newTotalBreakage The new total quantity of breakage.
+     * @brief Set the total breakage count.
+     * @param newTotalBreakage The new total breakage count.
      */
     void setTotalBreakage(int newTotalBreakage) {
         totalBreakage = newTotalBreakage;
     }
 
     /**
-     * @brief Increment the total quantity of breakage.
-     * @param amount The amount to increment.
+     * @brief Increment the total breakage count by a specified amount.
+     * @param amount The amount to increment by.
      */
     void incrementTotalBreakage(int amount) {
         totalBreakage += amount;
@@ -291,15 +281,15 @@ public:
 };
 
 /**
- * @brief Represents the "BOTTLE" app for managing beer inventory.
+ * @brief Represents a beer inventory management application.
  */
 class BottleApp {
 private:
-    bool isBreakageFlagged;                    // Flag for breakage
-    std::vector<Beer> beers;                   // Vector to store added beers
-    std::map<std::string, int> beerCounts;     // Map to store counts of each beer type
+    bool isBreakageFlagged;
+    std::vector<Beer> beers; // Vector to store added beers
+    std::map<std::string, int> beerCounts; // Map to store counts of each beer type
     std::vector<std::pair<std::string, int> > flaggedBeers; // Vector to store flagged beers and their quantities
-    Breakage breakage;                         // Breakage handling
+    Breakage breakage; // Breakage handling
 
 public:
     /**
@@ -309,7 +299,7 @@ public:
 
     /**
      * @brief Add beer to the stock.
-     * @param beer The Beer object to add.
+     * @param beer The beer to add.
      */
     void addBeer(const Beer& beer) {
         if (beer.getQuantity() <= 0) {
@@ -394,6 +384,11 @@ public:
      * @brief Display details of all added beers.
      */
     void displayAddedBeers() const {
+        if (beers.empty()) {
+            std::cout << "No beers in inventory." << std::endl;
+            return;
+        }
+
         std::cout << "List of added beers:" << std::endl;
         for (const Beer& beer : beers) {
             std::cout << "Name: " << beer.getName() << std::endl;
@@ -402,7 +397,7 @@ public:
             std::cout << "Container Size: " << beer.getContainerSize().getSizeWithUnits() << std::endl;
             std::cout << "Quantity: " << beer.getQuantity() << " bottles" << std::endl;
             std::cout << "Barcode: " << beer.getBarcode().getValue() << std::endl;
-            std::cout << "Last Updated Date: " << beer.getUpdatedDate() << std::endl;
+            std::cout << "Updated Date: " << beer.getUpdatedDate() << std::endl;
             std::cout << "-----------------------" << std::endl;
         }
     }
@@ -434,24 +429,36 @@ public:
     }
 
     /**
-     * @brief Edit the details of a specific beer.
+     * @brief Edit beer details.
      * @param beerName The name of the beer to edit.
      */
     void editBeer(const std::string& beerName) {
+        std::vector<std::string> availableBeerNames;
+        for (const Beer& beer : beers) {
+            availableBeerNames.push_back(beer.getName());
+        }
+
+        bool beerExists = false;
         for (Beer& beer : beers) {
             if (beer.getName() == beerName) {
+                beerExists = true;
                 std::string newName, newStyle;
                 double newAlcoholContent;
                 ContainerSize newContainerSize = beer.getContainerSize();
                 int newQuantity, newBarcode;
 
-                std::cout << "Enter new name for the beer: ";
-                std::cin >> newName;
-                beer.setName(newName);
+                std::cout << "Enter new name for the beer (press Enter to keep it the same): ";
+                std::string temp;
+                std::getline(std::cin, temp);
+                if (!temp.empty()) {
+                    beer.setName(temp);
+                }
 
-                std::cout << "Enter new style for the beer: ";
-                std::cin >> newStyle;
-                beer.setStyle(newStyle);
+                std::cout << "Enter new style for the beer (press Enter to keep it the same): ";
+                std::getline(std::cin, temp);
+                if (!temp.empty()) {
+                    beer.setStyle(temp);
+                }
 
                 std::cout << "Enter new alcohol content for the beer (%): ";
                 std::cin >> newAlcoholContent;
@@ -473,135 +480,171 @@ public:
                 std::cin >> newQuantity;
                 beer.setQuantity(newQuantity);
 
-                std::cout << "Enter new barcode for the beer: ";
-                std::cin >> newBarcode;
-                beer.setBarcode(newBarcode);
-
                 std::cout << "Beer details updated." << std::endl;
                 return;
             }
         }
 
-        std::cout << "Beer with name '" << beerName << "' not found." << std::endl;
+        if (!beerExists) {
+            std::cout << "Beer with name '" << beerName << "' not found." << std::endl;
+        }
     }
 
     /**
-     * @brief Get the total beer count in stock.
-     * @return The total beer count in stock.
+     * @brief Get the total count of all beers.
+     * @return The total count of all beers.
      */
     int getTotalBottleCount() const {
         return beerCounts.at("Total");
     }
+
+    /**
+     * @brief Check if a beer exists in the inventory.
+     * @param beerName The name of the beer to check.
+     * @return True if the beer exists, false otherwise.
+     */
+    bool beerExists(const std::string& beerName) const {
+        return beerCounts.find(beerName) != beerCounts.end();
+    }
 };
 
+/**
+ * @brief Display the menu options and get user input for the chosen option.
+ * @return The user's chosen option.
+ */
+int displayMenuAndGetOption() {
+    int option;
+    std::cout << "=======================" << std::endl;
+    std::cout << "Beer Inventory System" << std::endl;
+    std::cout << "=======================" << std::endl;
+    std::cout << "1. Add Beer" << std::endl;
+    std::cout << "2. Remove Beer" << std::endl;
+    std::cout << "3. Flag Breakage" << std::endl;
+    std::cout << "4. Display Added Beers" << std::endl;
+    std::cout << "5. Display Flagged Beers" << std::endl;
+    std::cout << "6. Display Total Counts" << std::endl;
+    std::cout << "7. Edit Beer" << std::endl;
+    std::cout << "8. Exit" << std::endl;
+    std::cout << "Enter option: ";
+    std::cin >> option;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear input buffer
+    return option;
+}
+
+/**
+ * @brief Get a valid 12-digit barcode from the user.
+ * @return The valid barcode.
+ */
+long long getValidBarcode() {
+    std::string barcodeStr;
+    while (true) {
+        std::cout << "Enter the barcode value (12 digits): ";
+        std::cin >> barcodeStr;
+        if (barcodeStr.length() == 12 && std::all_of(barcodeStr.begin(), barcodeStr.end(), ::isdigit)) {
+            try {
+                long long barcode = std::stoll(barcodeStr);
+                return barcode;
+            } catch (const std::out_of_range& e) {
+                std::cout << "Barcode value is too large. Please enter a valid 12-digit barcode." << std::endl;
+            } catch (const std::invalid_argument& e) {
+                std::cout << "Invalid input. Please enter a valid 12-digit barcode." << std::endl;
+            }
+        } else {
+            std::cout << "Invalid barcode. Please enter exactly 12 digits." << std::endl;
+        }
+    }
+}
+
+
+
 int main() {
-    BottleApp app;
+    BottleApp bottleApp;
 
-    // Keep running until the user requests to exit
-    bool exitRequested = false;
-    while (!exitRequested) {
-        std::cout << "\nBOTTLE - Beer Inventory Management" << std::endl;
-        std::cout << "1. Add Beer" << std::endl;
-        std::cout << "2. Remove Beer" << std::endl;
-        std::cout << "3. Display Added Beers" << std::endl;
-        std::cout << "4. Display Flagged Beers" << std::endl;
-        std::cout << "5. Display Total Counts" << std::endl;
-        std::cout << "6. Edit Beer Details" << std::endl;
-        std::cout << "7. Get Total Beer Count" << std::endl;
-        std::cout << "8. Exit" << std::endl;
+    int option;
+    bool exit = false;
 
-        int choice;
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
+    while (!exit) {
+        option = displayMenuAndGetOption();
 
-        switch (choice) {
+        switch (option) {
             case 1: {
-                // Add Beer
-                ContainerSize containerSize(true, 0); // Initialize with metric (ml)
                 std::string style, name;
                 double alcoholContent;
-                int quantity, barcodeValue;
+                int containerSize, quantity;
+                long barcodeValue;
 
-                std::cout << "Enter style of the beer: ";
-                std::cin >> style;
+                std::cout << "Enter the beer style: ";
+                std::getline(std::cin, style);
 
-                // Clear any remaining characters from the input buffer, including the newline character
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Enter the beer name: ";
+                std::getline(std::cin, name);
 
-                std::cout << "Enter name of the beer: ";
-                std::cin >> name;
-
-                // Clear any remaining characters from the input buffer, including the newline character
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                std::cout << "Enter alcohol content of the beer (%): ";
+                std::cout << "Enter the alcohol content (%): ";
                 std::cin >> alcoholContent;
 
-                std::cout << "Enter container size for the beer (size in ml for metric, fl oz for non-metric): ";
-                int newSize;
-                std::cin >> newSize;
-                containerSize.setSize(newSize);
+                std::cout << "Enter the container size (size in ml for metric, fl oz for non-metric): ";
+                std::cin >> containerSize;
 
                 std::cout << "Is the container size metric (1 for yes, 0 for no): ";
                 bool isMetric;
                 std::cin >> isMetric;
-                containerSize.setIsMetric(isMetric);
 
-                std::cout << "Enter quantity of bottles to add: ";
+                std::cout << "Enter the quantity: ";
                 std::cin >> quantity;
 
-                std::cout << "Enter barcode for the beer: ";
-                std::cin >> barcodeValue;
+                barcodeValue = getValidBarcode();
 
-                // Clear the input buffer
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                Beer newBeer(style, name, alcoholContent, containerSize, quantity, barcodeValue);
-                app.addBeer(newBeer);
+                if (bottleApp.beerExists(name)) {
+                    std::cout << "Beer with the same name already exists. Please edit the existing entry." << std::endl;
+                } else {
+                    ContainerSize container(isMetric, containerSize);
+                    Beer beer(style, name, alcoholContent, container, quantity, barcodeValue);
+                    bottleApp.addBeer(beer);
+                }
                 break;
             }
+            
             case 2: {
-                // Remove Beer
                 int amount;
-                std::cout << "Enter the quantity of beer bottles to remove: ";
+                std::cout << "Enter the quantity to remove: ";
                 std::cin >> amount;
-                app.removeBeer(amount);
+                bottleApp.removeBeer(amount);
                 break;
             }
-            case 3:
-                // Display Added Beers
-                app.displayAddedBeers();
+            case 3: {
+                bottleApp.flagBreakage();
+                std::cout << "Breakage has been flagged." << std::endl;
                 break;
-            case 4:
-                // Display Flagged Beers
-                app.displayFlaggedBeers();
+            }
+            case 4: {
+                bottleApp.displayAddedBeers();
                 break;
-            case 5:
-                // Display Total Counts
-                app.displayTotalCounts();
+            }
+            case 5: {
+                bottleApp.displayFlaggedBeers();
                 break;
+            }
             case 6: {
-                // Edit Beer Details
-                std::string beerNameToEdit;
-                std::cout << "Enter the name of the beer to edit: ";
-                std::cin >> beerNameToEdit;
-                app.editBeer(beerNameToEdit);
+                bottleApp.displayTotalCounts();
                 break;
             }
-            case 7:
-                // Get Total Beer Count
-                std::cout << "Total beer count in stock: " << app.getTotalBottleCount() << " bottles." << std::endl;
+            case 7: {
+                std::string beerName;
+                std::cout << "Enter the name of the beer to edit: ";
+                std::getline(std::cin, beerName);
+                bottleApp.editBeer(beerName);
                 break;
-            case 8:
-                // Exit
-                exitRequested = true;
+            }
+            case 8: {
+                exit = true;
                 break;
-            default:
-                std::cout << "Invalid choice. Please enter a valid option." << std::endl;
+            }
+            default: {
+                std::cout << "Invalid option. Please select a valid option from the menu." << std::endl;
+                break;
+            }
         }
     }
-
-    std::cout << "Exiting BOTTLE - Beer Inventory Management. Thank you!" << std::endl;
 
     return 0;
 }
