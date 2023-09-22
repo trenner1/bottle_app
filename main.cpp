@@ -4,6 +4,8 @@
 #include <map>
 #include <ctime>
 #include <limits>
+#include <stdexcept>
+#include <algorithm>
 
 /**
  * @brief Represents the size of a beer container.
@@ -118,6 +120,7 @@ private:
     int quantity;
     Barcode barcode;
     std::string updatedDate; // Date when the beer was last updated
+    int id;
 
 public:
     /**
@@ -128,12 +131,31 @@ public:
      * @param containerSize The container size of the beer.
      * @param quantity The quantity of the beer.
      * @param barcodeValue The barcode value associated with the beer.
+     * @param id The auto incrementing id of each entry of beer.
      */
     Beer(const std::string& style, const std::string& name, double alcoholContent, const ContainerSize& containerSize, int quantity, int barcodeValue)
-        : style(style), name(name), alcoholContent(alcoholContent), containerSize(containerSize), quantity(quantity), barcode(barcodeValue) {
+        : style(style), name(name), alcoholContent(alcoholContent), containerSize(containerSize), quantity(quantity), barcode(barcodeValue), id(-1) {
         // Initialize the updated date with the current date and time
         updateDate();
     }
+
+    /**
+     * @brief Set the id for the beer entry
+     * @param newId The id number for the new beer entry
+    */
+   void setId(int newId) {
+    id = newId;
+   }
+
+    /**
+     * @brief Get the id for the beer entry
+     * @return the id number int of the entry
+    */
+    int getId() const {
+        return id;
+    }
+
+
 
     /**
      * @brief Get the style of the beer.
@@ -285,100 +307,115 @@ public:
  */
 class BottleApp {
 private:
+    private:
     bool isBreakageFlagged;
-    std::vector<Beer> beers; // Vector to store added beers
-    std::map<std::string, int> beerCounts; // Map to store counts of each beer type
-    std::vector<std::pair<std::string, int> > flaggedBeers; // Vector to store flagged beers and their quantities
-    Breakage breakage; // Breakage handling
+    std::vector<Beer> beers;
+    std::map<std::string, int> beerCounts;
+    std::vector<std::pair<std::string, int> > flaggedBeers;
+    Breakage breakage;
+    int nextBeerId;
 
 public:
-    /**
-     * @brief Constructor for BottleApp.
-     */
-    BottleApp() : isBreakageFlagged(false) {}
+    BottleApp() : isBreakageFlagged(false), nextBeerId(1){}
 
-    /**
-     * @brief Add beer to the stock.
-     * @param beer The beer to add.
-     */
-    void addBeer(const Beer& beer) {
+    void addBeer(Beer& beer) {
         if (beer.getQuantity() <= 0) {
             std::cout << "Invalid quantity. Please enter a positive value." << std::endl;
             return;
         }
-
+        beer.setId(nextBeerId++);
         std::string beerName = beer.getName();
         int quantity = beer.getQuantity();
 
-        // Update the total count for this beer type
-        beerCounts[beerName] += quantity;
+        if (beerExists(beerName)) {
+            std::cout << "Beer with the same name already exists. Please edit the existing entry." << std::endl;
+            return;
+        }
 
-        // Update the total count of all beers
+        beerCounts[beerName] += quantity;
         beerCounts["Total"] += quantity;
 
         std::cout << quantity << " bottles of " << beerName << " added to stock." << std::endl;
-
-        // Store the added beer in the vector
         beers.push_back(beer);
-
-        // Update the date when the beer was added
         beers.back().updateDate();
 
         if (isBreakageFlagged) {
             std::cout << "Breakage has been flagged while adding beer." << std::endl;
-            // Store the flagged beer and its quantity
             flaggedBeers.push_back(std::make_pair(beerName, quantity));
-            // Increment total breakage
             breakage.incrementTotalBreakage(quantity);
         }
     }
+
+        /**
+         * @brief Get a valid 12-digit barcode from the user.
+         * @return The valid barcode.
+         */
+        long long getValidBarcode() {
+            std::string barcodeStr;
+            while (true) {
+                std::cout << "Enter the barcode value (12 digits): ";
+                std::cin >> barcodeStr;
+                if (barcodeStr.length() == 12 && std::all_of(barcodeStr.begin(), barcodeStr.end(), ::isdigit)) {
+                    try {
+                        long long barcode = std::stoll(barcodeStr);
+                        return barcode;
+                    } catch (const std::out_of_range& e) {
+                        std::cout << "Barcode value is too large. Please enter a valid 12-digit barcode." << std::endl;
+                    } catch (const std::invalid_argument& e) {
+                        std::cout << "Invalid input. Please enter a valid 12-digit barcode." << std::endl;
+                    }
+                } else {
+                    std::cout << "Invalid barcode. Please enter exactly 12 digits." << std::endl;
+                }
+            }
+        }
+
+
+
 
     /**
      * @brief Flag breakage while adding beer.
      */
     void flagBreakage() {
         isBreakageFlagged = true;
+        std::cout << "Breakage has been flagged." << std::endl;
     }
 
     /**
-     * @brief Remove beer from the stock.
-     * @param amount The amount of beer to remove.
-     */
-    void removeBeer(int amount) {
-        if (amount <= 0) {
-            std::cout << "Invalid amount. Please enter a positive value." << std::endl;
-            return;
-        }
+    * @brief Remove beer from the stock.
+    * @param amount The amount of beer to remove.
+    */
+    // Modify the removeBeer method to prompt for the ID to remove
+void removeBeer() {
+    std::cout << "Select a beer to remove by entering its ID:" << std::endl;
 
-        std::string beerName = "Total"; // Default to total count
+    // Display available beers with IDs
+    for (const Beer& beer : beers) {
+        std::cout << "ID: " << beer.getId() << " - " << beer.getName() << std::endl;
+    }
 
-        // Find the beer with the largest quantity available
-        for (const auto& beer : beers) {
-            if (beer.getQuantity() >= amount && beerCounts[beer.getName()] >= amount) {
-                beerName = beer.getName();
-                break;
-            }
-        }
+    int idToRemove;
+    std::cout << "Enter the ID of the beer to remove: ";
+    std::cin >> idToRemove;
 
-        if (beerCounts[beerName] >= amount) {
-            beerCounts[beerName] -= amount;
-            std::cout << amount << " bottles of " << beerName << " removed from stock." << std::endl;
-
-            // Update the date when the beer was removed
-            for (Beer& beer : beers) {
-                if (beer.getName() == beerName) {
-                    beer.updateDate();
-                    break;
-                }
-            }
-        } else {
-            std::cout << "Not enough " << beerName << " in stock to remove " << amount << " bottles." << std::endl;
-        }
-
-        if (isBreakageFlagged) {
-            std::cout << "Breakage has been flagged while removing beer." << std::endl;
+    bool found = false;
+    for (auto it = beers.begin(); it != beers.end(); ++it) {
+        if (it->getId() == idToRemove) {
+            beerCounts[it->getName()] -= it->getQuantity();
+            beerCounts["Total"] -= it->getQuantity();
+            it = beers.erase(it); // Remove the selected beer
+            std::cout << "Beer with ID " << idToRemove << " removed from stock." << std::endl;
+            found = true;
+            break;
         }
     }
+
+    if (!found) {
+        std::cout << "Beer with ID " << idToRemove << " not found in inventory." << std::endl;
+    }
+}
+
+
 
     /**
      * @brief Display details of all added beers.
@@ -391,6 +428,7 @@ public:
 
         std::cout << "List of added beers:" << std::endl;
         for (const Beer& beer : beers) {
+            std::cout << "ID: " << beer.getId() << std::endl;
             std::cout << "Name: " << beer.getName() << std::endl;
             std::cout << "Style: " << beer.getStyle() << std::endl;
             std::cout << "Alcohol Content: " << beer.getAlcoholContent() << "%" << std::endl;
@@ -531,30 +569,6 @@ int displayMenuAndGetOption() {
     return option;
 }
 
-/**
- * @brief Get a valid 12-digit barcode from the user.
- * @return The valid barcode.
- */
-long long getValidBarcode() {
-    std::string barcodeStr;
-    while (true) {
-        std::cout << "Enter the barcode value (12 digits): ";
-        std::cin >> barcodeStr;
-        if (barcodeStr.length() == 12 && std::all_of(barcodeStr.begin(), barcodeStr.end(), ::isdigit)) {
-            try {
-                long long barcode = std::stoll(barcodeStr);
-                return barcode;
-            } catch (const std::out_of_range& e) {
-                std::cout << "Barcode value is too large. Please enter a valid 12-digit barcode." << std::endl;
-            } catch (const std::invalid_argument& e) {
-                std::cout << "Invalid input. Please enter a valid 12-digit barcode." << std::endl;
-            }
-        } else {
-            std::cout << "Invalid barcode. Please enter exactly 12 digits." << std::endl;
-        }
-    }
-}
-
 
 
 int main() {
@@ -570,8 +584,10 @@ int main() {
             case 1: {
                 std::string style, name;
                 double alcoholContent;
-                int containerSize, quantity;
-                long barcodeValue;
+                int containerSize, quantity, barcodeValue;
+                bool isMetric; // Added isMetric variable
+
+//                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the input buffer
 
                 std::cout << "Enter the beer style: ";
                 std::getline(std::cin, style);
@@ -586,13 +602,12 @@ int main() {
                 std::cin >> containerSize;
 
                 std::cout << "Is the container size metric (1 for yes, 0 for no): ";
-                bool isMetric;
                 std::cin >> isMetric;
 
                 std::cout << "Enter the quantity: ";
                 std::cin >> quantity;
 
-                barcodeValue = getValidBarcode();
+                barcodeValue = bottleApp.getValidBarcode();
 
                 if (bottleApp.beerExists(name)) {
                     std::cout << "Beer with the same name already exists. Please edit the existing entry." << std::endl;
@@ -603,17 +618,13 @@ int main() {
                 }
                 break;
             }
-            
+
             case 2: {
-                int amount;
-                std::cout << "Enter the quantity to remove: ";
-                std::cin >> amount;
-                bottleApp.removeBeer(amount);
+                bottleApp.removeBeer();
                 break;
             }
             case 3: {
                 bottleApp.flagBreakage();
-                std::cout << "Breakage has been flagged." << std::endl;
                 break;
             }
             case 4: {
@@ -631,6 +642,7 @@ int main() {
             case 7: {
                 std::string beerName;
                 std::cout << "Enter the name of the beer to edit: ";
+                std::cin.ignore();
                 std::getline(std::cin, beerName);
                 bottleApp.editBeer(beerName);
                 break;
