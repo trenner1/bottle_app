@@ -518,9 +518,10 @@ public:
     void displayTotalCounts() const
     {
         std::cout << "Total counts of each beer type:" << std::endl;
-        for (const auto &entry : beerCounts)
-        {
-            std::cout << entry.first << ": " << entry.second << " bottles" << std::endl;
+        for (const auto &entry : beerCounts){
+           if (entry.first  != "Total"){
+                std::cout << entry.first << ": " << entry.second << " bottles" << std::endl;
+           } 
         }
     }
 
